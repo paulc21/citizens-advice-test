@@ -10,6 +10,7 @@ class Order < ApplicationRecord
 
   # Callbacks
   before_validation :default_order_date
+  before_validation :default_vat_rate
   
   # States
   include AASM
@@ -35,8 +36,23 @@ class Order < ApplicationRecord
       end
     end
   end
+
+  # Scopes
+  scope :active, ->() { where.not(aasm_state:["draft","cancelled"]) }
   
   # Methods
+  def net_total
+    self.line_items.map{|i| i.net_price * i.quantity }.sum
+  end
+
+  def vat_total
+    self.net_total * self.vat_percentage
+  end
+
+  def gross_total
+    self.net_total + self.vat_total
+  end
+
   private
   def order_date_in_future
     unless self.order_date.blank?
@@ -48,6 +64,10 @@ class Order < ApplicationRecord
 
   def default_order_date
     self.order_date ||= Date.today
+  end
+
+  def default_vat_rate
+    self.vat_percentage ||= VAT_DEFAULT
   end
 
   def reason_provided?

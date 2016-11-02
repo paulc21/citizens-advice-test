@@ -11,6 +11,11 @@ class LineItem < ApplicationRecord
 
   # Methods
   delegate :name, to: :product
+  delegate :net_price, to: :product
+
+  def subtotal
+    self.net_price * self.quantity
+  end
 
   private
   def default_quantity

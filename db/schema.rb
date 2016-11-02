@@ -32,9 +32,9 @@ ActiveRecord::Schema.define(version: 20161102210503) do
 
   create_table "products", force: :cascade do |t|
     t.string   "name"
-    t.decimal  "net_price"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.decimal  "net_price",  precision: 5, scale: 3
+    t.datetime "created_at",                         null: false
+    t.datetime "updated_at",                         null: false
   end
 
   create_table "users", force: :cascade do |t|
