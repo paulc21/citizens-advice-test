@@ -1,0 +1,15 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user_id: 1
+  order_date: 2016-11-02
+  vat_percentage: 9.99
+  aasm_state: MyString
+  cancel_reason: MyString
+
+two:
+  user_id: 1
+  order_date: 2016-11-02
+  vat_percentage: 9.99
+  aasm_state: MyString
+  cancel_reason: MyString
