@@ -49,10 +49,6 @@ class OrdersController < ApplicationController
   def create
   end
 
-  # POST /orders/:id
-  def update
-  end
-
   # ----------------------------------------------- #
   # Status changes
   # ----------------------------------------------- #

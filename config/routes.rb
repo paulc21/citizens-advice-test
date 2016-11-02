@@ -1,6 +1,6 @@
 Rails.application.routes.draw do
   # Order management
-  resources :orders, only: [:index,:show,:create,:update] do
+  resources :orders, only: [:index,:show,:create] do
     member do
       # Order status changes
       match 'place', to: 'orders#place', via: [:get,:post]
