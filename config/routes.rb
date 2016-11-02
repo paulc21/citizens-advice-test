@@ -6,10 +6,9 @@ Rails.application.routes.draw do
       match 'place', to: 'orders#place', via: [:get,:post]
       match 'pay', to: 'orders#pay', via: [:get,:post]
       match 'cancel', to: 'orders#cancel', via: [:get,:post]
-      # Item management
-      match 'add_item', to: 'orders#add_item', via: [:get,:post]
-      match 'remove_item', to: 'orders#remove_item', via: [:get,:post]
     end
+    # Item management
+    resources :items, only: [:create,:update,:destroy], controller: 'line_items'
   end
   # Product management
   resources :products, except: [:new,:edit]

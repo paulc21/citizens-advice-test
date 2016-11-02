@@ -5,19 +5,23 @@ class OrdersController < ApplicationController
   def index
     orders = Order.all.order(order_date: :desc)
 
-     format_response(orders.map{|o|
-      {
-        id: o.id,
-        user: o.user.email,
-        status: o.aasm_state,
-        net_total: o.net_total
-      }
-     }, "orders") and return
+    if orders.any?
+      format_response(orders.map{|o|
+        {
+          id: o.id,
+          user: o.user.email,
+          status: o.aasm_state,
+          net_total: o.net_total
+        }
+      }, "orders") and return
+    else
+      format_response({ status: 404, message: "No orders found" }) and return
+    end
   end
 
   # GET /orders/:id
   def show
-    format_response({
+    o = {
       id: @order.id,
       email: @order.user.email,
       status: @order.aasm_state,
@@ -31,7 +35,12 @@ class OrdersController < ApplicationController
       },
       net_total: @order.net_total,
       gross_total: @order.gross_total
-    },"order") and return
+    }
+    if @order.cancelled?
+      o[:cancel_reason] = @order.cancel_reason
+    end
+    
+    format_response(o,"order") and return
   end
 
   # POST /orders
@@ -53,7 +62,7 @@ class OrdersController < ApplicationController
       @order.place!
       redirect_to order_path(@order.id, format: params[:format]) and return
     else
-      format_response({ status: 403, message: "The requested order could not be placed"}) and return
+      format_response({ status: 403, message: "The requested order could not be placed (current status: #{@order.aasm_state})"}) and return
     end
   end
 
@@ -63,7 +72,7 @@ class OrdersController < ApplicationController
       @order.pay!
       redirect_to order_path(@order.id, format: params[:format]) and return
     else
-      format_response({ status: 403, message: "The requested order could be paid"}) and return
+      format_response({ status: 403, message: "The requested order could be paid (current status: #{@order.aasm_state})"}) and return
     end
   end
 
@@ -80,41 +89,8 @@ class OrdersController < ApplicationController
       @order.cancel!
       redirect_to order_path(@order.id, format: params[:format]) and return
     else
-      format_response({ status: 403, message: "The requested order could not be cancelled"}) and return
+      format_response({ status: 403, message: "The requested order could not be cancelled (current status: #{@order.aasm_state})"}) and return
     end
-  end
-
-  # ----------------------------------------------- #
-  # Item management
-  # Might be better putting this in its own controller?
-  # ----------------------------------------------- #
-
-  # GET|POST /orders/:id/add_item?product=:product_id&quantity=:quantity
-  def add_item
-    product = Product.find_by_id(params[:product])
-    if product.blank?
-      format_response({ status: 404, message: "Product not found" }) and return
-    end
-
-    # we should check for an existing line item with this product id and increase the quantity
-    existing_items = @order.line_items.where(product_id: product.id)
-    if existing_items.any?
-      existing_items.first.increment!(:quantity,params[:quantity].to_i)
-    else
-      line_item = LineItem.new(
-        order: @order,
-        product: product,
-        quantity: params[:quantity].to_i
-      )
-
-      unless line_item.save
-        format_response({ status: 500, message: line_item.errors.full_messages.to_sentence }) and return
-      end
-    end
-    redirect_to order_path(@order.id, format: params[:format]) and return
-  end
-
-  def delete_item
   end
 
   private
