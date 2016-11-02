@@ -6,8 +6,4 @@ class Product < ApplicationRecord
   # Validations
   validates :name, presence: true, uniqueness: true
   validates :net_price, presence: true
-    
-  # Callbacks
-  # Scopes
-  # Methods
 end
