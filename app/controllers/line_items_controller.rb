@@ -7,26 +7,21 @@ class LineItemsController < ApplicationController
   #   :quantity   The quantity to add to the order
   def create
     product = Product.find_by_id(params[:product])
-    if product.blank?
-      format_response({ success: false, message: "Product ##{params[:product_id]} not found" }) and return
-    end
+    format_response({ success: false, message: "Product ##{params[:product_id]} not found" }) and return if product.blank?
 
-    # we should check for an existing line item with this product id and increase the quantity
     existing_items = @order.line_items.where(product_id: product.id)
-    if existing_items.any?
-      format_response({ success: false, message: "Product #{product.name} is already in Order ##{@order.id}" }) and return
-    else
-      line_item = LineItem.new(
-        order: @order,
-        product: product,
-        quantity: params[:quantity].to_i
-      )
+    format_response({ success: false, message: "Product #{product.name} is already in Order ##{@order.id}" }) and return if existing_items.any?
 
-      if line_item.save
-        format_response({ success: true, message: "Product #{line_item.name} (#{line_item.quantity}) added to Order ##{@order.id}" }) and return
-      else
-        format_response({ success: false, message: line_item.errors.full_messages.to_sentence }) and return
-      end
+    line_item = LineItem.new(
+      order: @order,
+      product: product,
+      quantity: params[:quantity].to_i
+    )
+
+    if line_item.save
+      format_response({ success: true, message: "Product #{line_item.name} (#{line_item.quantity}) added to Order ##{@order.id}" }) and return
+    else
+      format_response({ success: false, message: line_item.errors.full_messages.to_sentence }) and return
     end
   end
 
