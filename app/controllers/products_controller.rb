@@ -1,5 +1,5 @@
 class ProductsController < ApplicationController
-  before_filter :fetch_product, only: [:update,:delete]
+  before_filter :fetch_product, only: [:update,:destroy]
 
   # GET /products
   def index
@@ -47,8 +47,8 @@ class ProductsController < ApplicationController
 
   # DELETE /products/:id
   def destroy
+    name = @product.name
     unless @product.orders.any?
-      name = @product_name
       @product.destroy
       format_response({ success: true, message: "Product '#{name}' has been deleted" }) and return
     else
@@ -59,6 +59,6 @@ class ProductsController < ApplicationController
   private
   def fetch_product
     @product = Product.find_by_id(params[:id])
-    format_response({ success: false, message: "Product not found" }) and return if @product.blank?
+    format_response({ success: false, message: "Product ##{params[:id]} not found" }) and return if @product.blank?
   end
 end

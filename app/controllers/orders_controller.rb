@@ -4,49 +4,26 @@ class OrdersController < ApplicationController
   # GET /orders
   def index
     orders = Order.all.order(order_date: :desc).map{|o|
-      {
-        id: o.id,
-        user: o.user.email,
-        order_date: o.order_date,
-        status: o.aasm_state,
-        net_total: o.net_total
-      }
+      order_to_hash(o)
     }
     format_response(orders, "orders") and return
   end
 
   # GET /orders/:id
   def show
-    o = {
-      id: @order.id,
-      user: @order.user.email,
-      order_date: @order.order_date,
-      status: @order.aasm_state,
-      items: @order.line_items.map{|li|
-        {
-          name: li.name,
-          init_price: li.net_price,
-          quantity: li.quantity,
-          net_subtotal: li.subtotal
-        }
-      },
-      net_total: @order.net_total,
-      gross_total: @order.gross_total
-    }
-    if @order.cancelled?
-      o[:cancel_reason] = @order.cancel_reason
-    end
-
+    o = order_to_hash(@order)
     format_response(o,"order") and return
   end
 
   # POST /orders
   # Parameters
-  #   :user   The ID of the User who is creating this order
+  #   :user             The ID of the User who is creating this order
+  #   :vat_percentage   The VAT percentage to apply to this order (optional)
   def create
     order = Order.new(
       user_id: params[:user]
     )
+    order.vat_percentage = params[:vat_percentage].to_d unless params[:vat_percentage].blank?
     if order.save
       format_response({ success: true, message: "Order #{order.id} created" }) and return
     else
@@ -98,5 +75,30 @@ class OrdersController < ApplicationController
   def fetch_order
     @order = Order.find_by_id(params[:id])
     format_response({ success: false, message: "The requested order could not be found" }) and return if @order.blank?
+  end
+
+  def order_to_hash(_order)
+    o = {
+      id: _order.id,
+      user: _order.user.email,
+      order_date: _order.order_date,
+      status: _order.aasm_state,
+      items: _order.line_items.map{|li|
+        {
+          name: li.name,
+          unit_price: li.net_price,
+          quantity: li.quantity,
+          net_subtotal: li.subtotal
+        }
+      },
+      net_total: _order.net_total,
+      vat_percentage: _order.vat_percentage,
+      gross_total: _order.gross_total
+    }
+    if _order.cancelled?
+      o[:cancel_reason] = _order.cancel_reason
+    end
+
+    return o
   end
 end
