@@ -18,7 +18,8 @@ class OrdersController < ApplicationController
   # POST /orders
   # Parameters
   #   :user             The ID of the User who is creating this order
-  #   :vat_percentage   The VAT percentage to apply to this order (optional)
+  #   :vat_percentage   The VAT percentage to apply to this order (optional, defaults to VAT_DEFAULT)
+  #   :order_date       The order date (in format YYYY-MM-DD) (optional, defaults to today)
   def create
     user = User.find_by_id(params[:user])
     format_response({ success: false, message: "User ##{params[:user_id]} not found" }) and return if user.blank?
@@ -26,7 +27,10 @@ class OrdersController < ApplicationController
     order = Order.new(
       user_id: user.id
     )
+
+    order.order_date = Date.parse(params[:order_date]) unless params[:order_date].blank?
     order.vat_percentage = params[:vat_percentage].to_d unless params[:vat_percentage].blank?
+
     if order.save
       format_response({ success: true, message: "Order #{order.id} created" }) and return
     else
