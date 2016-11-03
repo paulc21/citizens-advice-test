@@ -20,8 +20,11 @@ class OrdersController < ApplicationController
   #   :user             The ID of the User who is creating this order
   #   :vat_percentage   The VAT percentage to apply to this order (optional)
   def create
+    user = User.find_by_id(params[:user])
+    format_response({ success: false, message: "User ##{params[:user_id]} not found" }) and return if user.blank?
+
     order = Order.new(
-      user_id: params[:user]
+      user_id: user.id
     )
     order.vat_percentage = params[:vat_percentage].to_d unless params[:vat_percentage].blank?
     if order.save
@@ -83,8 +86,10 @@ class OrdersController < ApplicationController
       user: _order.user.email,
       order_date: _order.order_date,
       status: _order.aasm_state,
-      items: _order.line_items.map{|li|
+      line_items: _order.line_items.map{|li|
         {
+          id: li.id,
+          product_id: li.product_id,
           name: li.name,
           unit_price: li.net_price,
           quantity: li.quantity,
