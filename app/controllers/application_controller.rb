@@ -1,5 +1,7 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery with: :exception
+
+  # This is to prevent Rails' auth token validation breaking API calls
   skip_before_filter :verify_authenticity_token
 
   private

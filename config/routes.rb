@@ -11,5 +11,5 @@ Rails.application.routes.draw do
     resources :items, only: [:create,:update,:destroy], controller: 'line_items'
   end
   # Product management
-  resources :products, except: [:new,:edit]
+  resources :products, except: [:show,:new,:edit]
 end
